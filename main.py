@@ -20,17 +20,17 @@ else:
     region = os.environ['REGION']
 
 
-# session = boto3.Session(profile_name='mm', region_name=region)
-session = boto3.Session(region_name=region)
+session = boto3.Session(profile_name='mm', region_name=region)
+# session = boto3.Session(region_name=region)
 ec2 = session.resource('ec2')
 
 today = datetime.date.today().strftime("%A")
 
 
-def create_ec2_volume_snapshot(volume_name, volume_id, instance_id):
+def create_ec2_volume_snapshot(volume_name, volume_id, instance_id, instance_name):
     logger.info("Creating snapshot for volume {} with id of {} with day tag of {}".format(volume_name, volume_id, today))
     ec2.create_snapshot(
-        Description="Snapshot for {} with id {} of ec2 instance {}".format(volume_name, volume_id, instance_id),
+        Description="Snapshot for {} with id {} of ec2 instance {} with id".format(volume_name, volume_id,instance_name ,instance_id),
         VolumeId=volume_id,
         TagSpecifications=[
             {
@@ -42,7 +42,7 @@ def create_ec2_volume_snapshot(volume_name, volume_id, instance_id):
                     },
                     {
                         'Key': 'Name',
-                        'Value': volume_name + '_' + '_' + instance_id + '_' + today
+                        'Value': volume_name + '_' + instance_name + '_' + instance_id + '_' + today
                     },
                     {
                         'Key': 'volume_id',
@@ -70,8 +70,9 @@ def get_ec2_instance_volumes(instance):
     for volume in instance.block_device_mappings:
         logger.debug("volume ids: {}".format(volume['Ebs']['VolumeId']))
         logger.debug("volume ids: {}".format(volume['DeviceName']))
+        logger.debug("Instance name is {}".format(instance.image.name))
         if volume is not None:
-            create_ec2_volume_snapshot(volume['DeviceName'], volume['Ebs']['VolumeId'], instance.id)
+            create_ec2_volume_snapshot(volume['DeviceName'], volume['Ebs']['VolumeId'], instance.id, instance.image.name)
 
 
 def list_all_volumes_to_delete():
