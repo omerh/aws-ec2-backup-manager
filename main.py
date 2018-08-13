@@ -20,8 +20,8 @@ else:
     region = os.environ['REGION']
 
 
-session = boto3.Session(profile_name='mm', region_name=region)
-# session = boto3.Session(region_name=region)
+# session = boto3.Session(profile_name='mm', region_name=region)
+session = boto3.Session(region_name=region)
 ec2 = session.resource('ec2')
 
 today = datetime.date.today().strftime("%A")
@@ -70,9 +70,13 @@ def get_ec2_instance_volumes(instance):
     for volume in instance.block_device_mappings:
         logger.debug("volume ids: {}".format(volume['Ebs']['VolumeId']))
         logger.debug("volume ids: {}".format(volume['DeviceName']))
-        logger.debug("Instance name is {}".format(instance.image.name))
+        logger.debug("Instance name is {}".format(instance.meta.data['KeyName']))
+        instance_name = instance.meta.data['KeyName']
+        if instance_name is None:
+            instance_name = 'No_Name_Tag'
+
         if volume is not None:
-            create_ec2_volume_snapshot(volume['DeviceName'], volume['Ebs']['VolumeId'], instance.id, instance.image.name)
+            create_ec2_volume_snapshot(volume['DeviceName'], volume['Ebs']['VolumeId'], instance.id, instance_name)
 
 
 def list_all_volumes_to_delete():
