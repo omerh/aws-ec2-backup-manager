@@ -29,4 +29,3 @@ The IAM for the lambda is:
     ]
 }
 ```
-
